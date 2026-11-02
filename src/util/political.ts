@@ -32,7 +32,6 @@ const politicalKeywords = [
   'chính phủ',
   'bầu cử',
   'ứng cử',
-  'democracy',
   'Tàu',
   'Trung Cộng',
   'Đài Loan',

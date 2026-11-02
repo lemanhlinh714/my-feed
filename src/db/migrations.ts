@@ -87,3 +87,32 @@ migrations['002'] = {
       .execute()
   },
 }
+
+migrations['003'] = {
+  async up(db: Kysely<unknown>) {
+    await db.schema
+      .createTable('post_repost')
+      .addColumn('repostUri', 'varchar', (col) => col.primaryKey())
+      .addColumn('authorDid', 'varchar', (col) => col.notNull())
+      .addColumn('postUri', 'varchar', (col) => col.notNull())
+      .addColumn('createdAt', 'varchar', (col) => col.notNull())
+      .addColumn('status', 'varchar', (col) => col.notNull().defaultTo('active'))
+      .execute()
+
+    await db.schema
+      .createIndex('idx_repost_author_feed')
+      .on('post_repost')
+      .columns(['authorDid', 'status', 'createdAt', 'repostUri'])
+      .execute()
+    await db.schema
+      .createIndex('idx_repost_feed')
+      .on('post_repost')
+      .columns(['status', 'createdAt', 'repostUri'])
+      .execute()
+  },
+  async down(db: Kysely<unknown>) {
+    await db.schema.dropIndex('idx_repost_feed').execute()
+    await db.schema.dropIndex('idx_repost_author_feed').execute()
+    await db.schema.dropTable('post_repost').execute()
+  },
+}

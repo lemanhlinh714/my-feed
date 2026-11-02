@@ -1,5 +1,6 @@
 export type DatabaseSchema = {
   post: Post
+  post_repost: PostRepost
   app_user: AppUser
   sub_state: SubState
 }
@@ -12,6 +13,14 @@ export type Post = {
   createdAt: string
   langsJson: string
   isPolitical: number
+  status: 'active' | 'deleted'
+}
+
+export type PostRepost = {
+  repostUri: string
+  authorDid: string
+  postUri: string
+  createdAt: string
   status: 'active' | 'deleted'
 }
 

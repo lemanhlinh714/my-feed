@@ -63,7 +63,7 @@ Alternatively, run the server with Docker, e.g., `docker build -t feed-generator
 
 The `vn-politics` feed continuously syncs `public.app_users` through Supabase Realtime and reconciles the complete user list once per minute. Enable the `app_users` table in the `supabase_realtime` publication. Set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` only in the server environment; never put the secret in a client app.
 
-The global AT Protocol firehose indexes posts from app users and posts matching a Vietnamese political keyword classifier. App-user posts rank first, followed by political posts from other authors. New app users are backfilled from the public AppView, up to `APP_USER_BACKFILL_MAX_PAGES` pages. Only public posts supplied by AppView/firehose can be indexed; this does not include private posts and cannot guarantee complete coverage.
+The global AT Protocol firehose indexes posts and reposts from app users, plus political posts and reposts of indexed political posts from other authors. App-user activity ranks first. Quote posts are indexed as posts; public quotes of already-indexed political posts are also classified as political. New app users' authored posts are backfilled from the public AppView, up to `APP_USER_BACKFILL_MAX_PAGES` pages; historical repost records are not reconstructed by this backfill. Only public posts supplied by AppView/firehose can be indexed, so coverage is not guaranteed to be complete.
 
 Publish a feed record with the short name `vn-politics` to expose this feed in Bluesky.
 
