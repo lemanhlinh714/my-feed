@@ -20,7 +20,6 @@ const politicalKeywords = [
   'Trung Quốc',
   'Liên Xô',
   'Liên minh châu Âu',
-  'ASEAN',
   'cộng sản',
   'dân chủ',
   'tự do',
