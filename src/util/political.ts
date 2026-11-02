@@ -45,7 +45,6 @@ const politicalKeywords = [
   'cách mạng',
   'công đoàn',
   'tuyên giáo',
-  'Russia',
   'vietnam',
   'viet nam',
   'viet cong',
