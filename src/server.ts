@@ -72,10 +72,12 @@ export class FeedGenerator {
 
   async start(): Promise<http.Server> {
     await migrateToLatest(this.db)
-    await startAuthorSync(this.db, this.appUserDids)
-    this.firehose.run(this.cfg.subscriptionReconnectDelay)
     this.server = this.app.listen(this.cfg.port, this.cfg.listenhost)
     await events.once(this.server, 'listening')
+    this.firehose.run(this.cfg.subscriptionReconnectDelay)
+    void startAuthorSync(this.db, this.appUserDids).catch((error: unknown) => {
+      console.error('App user sync failed to start', error)
+    })
     return this.server
   }
 }
