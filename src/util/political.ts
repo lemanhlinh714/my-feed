@@ -22,7 +22,7 @@ const politicalKeywords = [
   'Liên minh châu Âu',
   'ASEAN',
   'Ukraine',
-  'communist',
+  'cs',
   'cộng sản',
   'dân chủ',
   'tự do',
