@@ -21,7 +21,6 @@ const politicalKeywords = [
   'Liên Xô',
   'Liên minh châu Âu',
   'ASEAN',
-  'Ukraine',
   'cộng sản',
   'dân chủ',
   'tự do',
