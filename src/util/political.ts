@@ -51,6 +51,13 @@ const politicalKeywords = [
   'vn',
   'vietnam',
   'viet nam',
+  'viet cong',
+  'viet minh',
+  'viet nam cong hoa',
+  'cộng hòa xã hội chủ nghĩa Việt Nam',
+  'cộng hòa xã hội chủ nghĩa',
+  'cộng hòa',
+  'việt nam',
 
 ]
 
@@ -60,8 +67,14 @@ const normalizeText = (value: string) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
 
 export const isPoliticalPost = (text: string) => {
-  const normalizedText = normalizeText(text)
-  return politicalKeywords.some((keyword) => normalizedText.includes(keyword))
+  const normalizedText = ` ${normalizeText(text)} `
+  return politicalKeywords.some((keyword) => {
+    const normalizedKeyword = normalizeText(keyword)
+    return normalizedKeyword.length > 0 &&
+      normalizedText.includes(` ${normalizedKeyword} `)
+  })
 }
