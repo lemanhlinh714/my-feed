@@ -13,6 +13,7 @@ export type Post = {
   createdAt: string
   langsJson: string
   isPolitical: number
+  isVietnamEligible: number
   status: 'active' | 'deleted'
 }
 

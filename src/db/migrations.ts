@@ -116,3 +116,23 @@ migrations['003'] = {
     await db.schema.dropTable('post_repost').execute()
   },
 }
+
+migrations['004'] = {
+  async up(db: Kysely<unknown>) {
+    await db.schema
+      .alterTable('post')
+      .addColumn('isVietnamEligible', 'integer', (col) =>
+        col.notNull().defaultTo(0),
+      )
+      .execute()
+    await db.schema
+      .createIndex('idx_post_vietnam_feed')
+      .on('post')
+      .columns(['status', 'isVietnamEligible', 'createdAt', 'uri'])
+      .execute()
+  },
+  async down(db: Kysely<unknown>) {
+    await db.schema.dropIndex('idx_post_vietnam_feed').execute()
+    await db.schema.alterTable('post').dropColumn('isVietnamEligible').execute()
+  },
+}

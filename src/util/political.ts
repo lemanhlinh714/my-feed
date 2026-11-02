@@ -53,7 +53,26 @@ const politicalKeywords = [
   'cộng hòa xã hội chủ nghĩa',
   'cộng hòa',
   'việt nam',
+]
 
+const vietnamRelatedKeywords = [
+  'vietnam',
+  'viet nam',
+  'vietnamese',
+  'hanoi',
+  'saigon',
+  'ho chi minh',
+  'bien dong',
+  'hoang sa',
+  'truong sa',
+  'vietnam politics',
+  'vietnam government',
+  'vietnam election',
+  'vietnam human rights',
+  'human rights in vietnam',
+  'vietnamese human rights',
+  'vietnam communist party',
+  'south china sea vietnam',
 ]
 
 const normalizeText = (value: string) =>
@@ -73,3 +92,23 @@ export const isPoliticalPost = (text: string) => {
       normalizedText.includes(` ${normalizedKeyword} `)
   })
 }
+
+const matchesKeyword = (text: string, keywords: string[]) => {
+  const normalizedText = ` ${normalizeText(text)} `
+  return keywords.some((keyword) => {
+    const normalizedKeyword = normalizeText(keyword)
+    return normalizedKeyword.length > 0 &&
+      normalizedText.includes(` ${normalizedKeyword} `)
+  })
+}
+
+export const isVietnameseLanguage = (langs?: readonly string[]) =>
+  langs?.some((lang) => /^vi(?:-|$)/i.test(lang.trim())) ?? false
+
+export const isVietnamRelated = (text: string) =>
+  matchesKeyword(text, vietnamRelatedKeywords)
+
+export const isVietnamEligiblePost = (
+  text: string,
+  langs?: readonly string[],
+) => isVietnamRelated(text) || (isVietnameseLanguage(langs) && isPoliticalPost(text))

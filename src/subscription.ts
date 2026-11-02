@@ -3,7 +3,10 @@ import {
   isCommit,
 } from './lexicon/types/com/atproto/sync/subscribeRepos'
 import { FirehoseSubscriptionBase, getOpsByType } from './util/subscription'
-import { isPoliticalPost } from './util/political'
+import {
+  isPoliticalPost,
+  isVietnamEligiblePost,
+} from './util/political'
 
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
   constructor(
@@ -23,16 +26,16 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     const externalRepostTargets = ops.reposts.creates
       .filter((repost) => !this.appUserDids.has(repost.author))
       .map((repost) => repost.record.subject.uri)
-    const politicalTargets = new Set<string>()
+    const vietnamEligibleTargets = new Set<string>()
     if (externalRepostTargets.length > 0) {
-      const politicalPosts = await this.db
+      const vietnamEligiblePosts = await this.db
         .selectFrom('post')
         .select('uri')
         .where('uri', 'in', externalRepostTargets)
         .where('status', '=', 'active')
-        .where('isPolitical', '=', 1)
+        .where('isVietnamEligible', '=', 1)
         .execute()
-      for (const post of politicalPosts) politicalTargets.add(post.uri)
+      for (const post of vietnamEligiblePosts) vietnamEligibleTargets.add(post.uri)
     }
 
     const quotedUris = ops.posts.creates.flatMap((post) => {
@@ -50,14 +53,14 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     })
     const politicalQuoteUris = new Set<string>()
     if (quotedUris.length > 0) {
-      const politicalQuotes = await this.db
+      const vietnamEligibleQuotes = await this.db
         .selectFrom('post')
         .select('uri')
         .where('uri', 'in', quotedUris)
         .where('status', '=', 'active')
-        .where('isPolitical', '=', 1)
+        .where('isVietnamEligible', '=', 1)
         .execute()
-      for (const post of politicalQuotes) politicalQuoteUris.add(post.uri)
+      for (const post of vietnamEligibleQuotes) politicalQuoteUris.add(post.uri)
     }
 
     const postsToUpsert = ops.posts.creates
@@ -73,13 +76,13 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
             embed?.$type === 'app.bsky.embed.recordWithMedia'
               ? embed.record?.record
               : embed?.record
-          const quotesPoliticalPost =
+          const quotesVietnamEligiblePost =
             typeof strongRef?.uri === 'string' &&
             politicalQuoteUris.has(strongRef.uri)
           return (
             this.appUserDids.has(post.author) ||
-            isPoliticalPost(post.record.text) ||
-            quotesPoliticalPost
+            isVietnamEligiblePost(post.record.text, post.record.langs) ||
+            quotesVietnamEligiblePost
           )
         },
       )
@@ -90,8 +93,9 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
         authorDid: post.author,
         createdAt: post.record.createdAt,
         langsJson: JSON.stringify(post.record.langs ?? []),
-        isPolitical:
-          isPoliticalPost(post.record.text) ||
+        isPolitical: isPoliticalPost(post.record.text) ? 1 : 0,
+        isVietnamEligible:
+          isVietnamEligiblePost(post.record.text, post.record.langs) ||
           (() => {
             const embed = post.record.embed as
               | {
@@ -117,7 +121,7 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
       .filter(
         (repost) =>
           this.appUserDids.has(repost.author) ||
-          politicalTargets.has(repost.record.subject.uri),
+          vietnamEligibleTargets.has(repost.record.subject.uri),
       )
       .map((repost) => ({
         repostUri: repost.uri,
@@ -152,6 +156,7 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
             createdAt: expression.ref('excluded.createdAt'),
             langsJson: expression.ref('excluded.langsJson'),
             isPolitical: expression.ref('excluded.isPolitical'),
+            isVietnamEligible: expression.ref('excluded.isVietnamEligible'),
             status: expression.ref('excluded.status'),
           })),
         )

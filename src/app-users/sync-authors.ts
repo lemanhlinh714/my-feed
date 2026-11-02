@@ -5,7 +5,10 @@ import {
 	createSupabaseClient,
 	fetchAppUsers,
 } from './supabase'
-import { isPoliticalPost } from '../util/political'
+import {
+	isPoliticalPost,
+	isVietnamEligiblePost,
+} from '../util/political'
 
 dotenv.config()
 
@@ -73,6 +76,9 @@ const backfillAuthor = async (db: Database, did: string) => {
 				const record = item.post.record
 				if (typeof record.createdAt !== 'string') return []
 				const text = typeof record.text === 'string' ? record.text : ''
+								const langs = Array.isArray(record.langs)
+									? record.langs.filter((lang): lang is string => typeof lang === 'string')
+									: []
 				return [
 					{
 						uri: item.post.uri,
@@ -80,10 +86,9 @@ const backfillAuthor = async (db: Database, did: string) => {
 						indexedAt: new Date().toISOString(),
 						authorDid: did,
 						createdAt: record.createdAt,
-						langsJson: JSON.stringify(
-							Array.isArray(record.langs) ? record.langs : [],
-						),
+						langsJson: JSON.stringify(langs),
 						isPolitical: isPoliticalPost(text) ? 1 : 0,
+						isVietnamEligible: isVietnamEligiblePost(text, langs) ? 1 : 0,
 						status: 'active' as const,
 					},
 				]
@@ -101,6 +106,7 @@ const backfillAuthor = async (db: Database, did: string) => {
 						createdAt: expression.ref('excluded.createdAt'),
 						langsJson: expression.ref('excluded.langsJson'),
 						isPolitical: expression.ref('excluded.isPolitical'),
+						isVietnamEligible: expression.ref('excluded.isVietnamEligible'),
 						status: expression.ref('excluded.status'),
 					})),
 				)
