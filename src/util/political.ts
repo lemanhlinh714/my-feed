@@ -53,6 +53,7 @@ const politicalKeywords = [
   'cộng hòa xã hội chủ nghĩa',
   'cộng hòa',
   'việt nam',
+  'aiart',
 ]
 
 const vietnamRelatedKeywords = [
