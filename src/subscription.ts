@@ -161,6 +161,12 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
           })),
         )
         .execute()
+      const appUserPostCount = postsToUpsert.filter((post) =>
+        this.appUserDids.has(post.authorDid),
+      ).length
+      if (appUserPostCount > 0) {
+        console.log(`Indexed ${appUserPostCount} post(s) from app users`)
+      }
     }
     if (repostsToUpsert.length > 0) {
       await this.db

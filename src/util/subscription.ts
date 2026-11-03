@@ -37,20 +37,25 @@ export abstract class FirehoseSubscriptionBase {
   abstract handleEvent(evt: RepoEvent): Promise<void>
 
   async run(subscriptionReconnectDelay: number) {
-    try {
-      for await (const evt of this.sub) {
-        await this.handleEvent(evt)
-        // update stored cursor every 20 events or so
-        if (isCommit(evt) && evt.seq % 20 === 0) {
-          await this.updateCursor(evt.seq)
+    while (true) {
+      try {
+        let receivedFirstEvent = false
+        for await (const evt of this.sub) {
+          if (!receivedFirstEvent) {
+            console.log('Received first event from AT Protocol firehose')
+            receivedFirstEvent = true
+          }
+          await this.handleEvent(evt)
+          if (isCommit(evt) && evt.seq % 20 === 0) {
+            await this.updateCursor(evt.seq)
+          }
         }
+        console.warn('AT Protocol firehose stream ended; reconnecting')
+      } catch (err) {
+        console.error('AT Protocol firehose stream failed; reconnecting', err)
       }
-    } catch (err) {
-      console.error('repo subscription errored', err)
-      setTimeout(
-        () => this.run(subscriptionReconnectDelay),
-        subscriptionReconnectDelay,
-      )
+
+      await new Promise((resolve) => setTimeout(resolve, subscriptionReconnectDelay))
     }
   }
 
